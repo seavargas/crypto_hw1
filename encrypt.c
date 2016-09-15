@@ -1,7 +1,7 @@
 /************************************
  Encryption file from Jonathan Katz's
  Introduction to Classical Cryptography
- Given file for HW 1
+ given file for HW 1
  ************************************/
 
 #include <stdio.h>

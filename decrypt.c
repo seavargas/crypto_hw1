@@ -8,6 +8,7 @@
 
 int main(){
     unsigned char ch1, ch2;
+    int byte;
     FILE *fpIn, *fpOut;
     int i;
     
@@ -20,13 +21,13 @@ int main(){
     i=0;
     
     //Find the key length
-    while (fscanf(fpIn, "%c%c", &ch1, &ch2) != EOF) {
+    while (fscanf(fpIn, "%02X", &byte) != EOF) {
         
-        if (ch1!='\n' && ch2!='\n') {
-            //            fprintf(fpOut, "%02X", ch ^ key[i % KEY_LENGTH]); // ^ is logical XOR
-            fprintf(stdout, "%c%c\n", ch1, ch2);
-            i++;
+        if (byte != 13) {
+            fprintf(stdout, "%02X = ", byte);
+            fprintf(stdout, "%c\n", byte);
         }
+        i++;
     }
     //take every Nth character and calculate frequencies
     
