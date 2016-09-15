@@ -7,7 +7,7 @@
 #include <stdio.h>
 
 int main(){
-    unsigned char ch;
+    unsigned char ch1, ch2;
     FILE *fpIn, *fpOut;
     int i;
     
@@ -20,16 +20,19 @@ int main(){
     i=0;
     
     //Find the key length
-    printf("words");
+    while (fscanf(fpIn, "%c%c", &ch1, &ch2) != EOF) {
+        
+        if (ch1!='\n' && ch2!='\n') {
+            //            fprintf(fpOut, "%02X", ch ^ key[i % KEY_LENGTH]); // ^ is logical XOR
+            fprintf(stdout, "%c%c\n", ch1, ch2);
+            i++;
+        }
+    }
+    //take every Nth character and calculate frequencies
+    
     //Find the key
     
-    while (fscanf(fpIn, "%c", &ch) != EOF) {
 
-        if (ch!='\n') {
-//            fprintf(fpOut, "%02X", ch ^ key[i % KEY_LENGTH]); // ^ is logical XOR
-            
-            i++;      }
-    }   
     
     
     fclose(fpIn);  
