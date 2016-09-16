@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>     /* strtol */
 #define MAX_KEY_LENGTH 10
+#define LOGGING 0
 
 int main(){
     unsigned char ch1, ch2;
@@ -14,6 +15,8 @@ int main(){
     FILE *fpIn, *fpOut;
     int i;
     char distribution[MAX_KEY_LENGTH][255];//array of key lengths & distributions for each key length
+    int max[MAX_KEY_LENGTH], min[MAX_KEY_LENGTH]; //max and min of ASCII as integers
+    
     
 //    unsigned char key[KEY_LENGTH] = {0x00, 0x00};
     
@@ -30,16 +33,20 @@ int main(){
 
         while (fscanf(fpIn, "%02X", &byte) != EOF) {
             
-            if (byte != 13) {
-                fprintf(stdout, "%02d = ", byte);
-                fprintf(stdout, "%c & i=%d\n", byte, i);
+            if (LOGGING) {
+                if (byte != 13) {
+                    fprintf(stdout, "%02d = ", byte);
+                    fprintf(stdout, "%c & i=%d\n", byte, i);
+                }
             }
             
             if (i % n == 0) {
                 //every nth character
-                printf("logged\n");
+                if(LOGGING){printf("logged\n");}
                 //log the frequency at N, digit
                 distribution[n][byte] ++;
+                if (min[n] == 0) {min[n] = byte;}
+                if (max[n] < byte) {max[n] = byte;}
             }
             
             i++;
@@ -47,15 +54,21 @@ int main(){
         }
         rewind(fpIn);
         
-        if (n == 1) {
-            fprintf(stdout, "95=%d 96=%d 97=%d 98=%d 99=%d 100=%d\n", distribution[n][95],distribution[n][96],distribution[n][97],distribution[n][98],distribution[n][99],distribution[n][100]);
+        if (LOGGING) {
             
-            for (int j = 0; j < 255; j++) {
-                if (distribution[n][j] != 0) {
-                    fprintf(stdout,"[%d][%d]\n", n,j);
+            if (n == 1) {
+                fprintf(stdout, "95=%d 96=%d 97=%d 98=%d 99=%d 100=%d\n", distribution[n][95],distribution[n][96],distribution[n][97],distribution[n][98],distribution[n][99],distribution[n][100]);
+                
+                for (int j = 0; j < 255; j++) {
+                    if (distribution[n][j] != 0) {
+                        fprintf(stdout,"[%d][%d]\n", n,j);
+                    }
                 }
             }
+            
         }
+        fprintf(stdout, "min=%d, max=%d\n", min[n], max[n]);
+        
     }
     //Find the key
     
