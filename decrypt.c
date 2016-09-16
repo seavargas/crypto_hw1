@@ -5,12 +5,14 @@
  ************************************/
 
 #include <stdio.h>
+#define MAX_KEY_LENGTH 10
 
 int main(){
     unsigned char ch1, ch2;
     int byte;
     FILE *fpIn, *fpOut;
     int i;
+    int distribution[MAX_KEY_LENGTH][255];//array of key lengths & distributions for each key length
     
 //    unsigned char key[KEY_LENGTH] = {0x00, 0x00};
     
@@ -18,19 +20,30 @@ int main(){
     
     fpIn = fopen("ctext.txt", "r");
     fpOut = fopen("ptext_decoded.txt", "w");
-    i=0;
     
     //Find the key length
-    while (fscanf(fpIn, "%02X", &byte) != EOF) {
+    for (int n = 1; n < MAX_KEY_LENGTH; n++) {
         
-        if (byte != 13) {
-            fprintf(stdout, "%02X = ", byte);
-            fprintf(stdout, "%c\n", byte);
+        fprintf(stdout, "\nn = %d\n", n);
+        i=1;
+
+        while (fscanf(fpIn, "%02X", &byte) != EOF) {
+            
+            if (byte != 13) {
+                fprintf(stdout, "%02X = ", byte);
+                fprintf(stdout, "%c & i=%d\n", byte, i);
+            }
+            
+            if (i % n == 0) {
+                //every nth character
+                printf("womp\n");
+            }
+            
+            i++;
+
         }
-        i++;
+        rewind(fpIn);
     }
-    //take every Nth character and calculate frequencies
-    
     //Find the key
     
 
