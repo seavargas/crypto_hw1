@@ -5,6 +5,7 @@
  ************************************/
 
 #include <stdio.h>
+#include <stdlib.h>     /* strtol */
 #define MAX_KEY_LENGTH 10
 
 int main(){
@@ -12,7 +13,7 @@ int main(){
     int byte;
     FILE *fpIn, *fpOut;
     int i;
-    int distribution[MAX_KEY_LENGTH][255];//array of key lengths & distributions for each key length
+    char distribution[MAX_KEY_LENGTH][255];//array of key lengths & distributions for each key length
     
 //    unsigned char key[KEY_LENGTH] = {0x00, 0x00};
     
@@ -30,19 +31,31 @@ int main(){
         while (fscanf(fpIn, "%02X", &byte) != EOF) {
             
             if (byte != 13) {
-                fprintf(stdout, "%02X = ", byte);
+                fprintf(stdout, "%02d = ", byte);
                 fprintf(stdout, "%c & i=%d\n", byte, i);
             }
             
             if (i % n == 0) {
                 //every nth character
-                printf("womp\n");
+                printf("logged\n");
+                //log the frequency at N, digit
+                distribution[n][byte] ++;
             }
             
             i++;
 
         }
         rewind(fpIn);
+        
+        if (n == 1) {
+            fprintf(stdout, "95=%d 96=%d 97=%d 98=%d 99=%d 100=%d\n", distribution[n][95],distribution[n][96],distribution[n][97],distribution[n][98],distribution[n][99],distribution[n][100]);
+            
+            for (int j = 0; j < 255; j++) {
+                if (distribution[n][j] != 0) {
+                    fprintf(stdout,"[%d][%d]\n", n,j);
+                }
+            }
+        }
     }
     //Find the key
     
