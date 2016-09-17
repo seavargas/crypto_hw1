@@ -7,7 +7,8 @@
 #include <stdio.h>
 #include <stdlib.h>     /* strtol */
 #include <math.h>
-#define MAX_KEY_LENGTH 7
+#include <string.h>
+#define MAX_KEY_LENGTH 20
 #define LOGGING 0
 
 int main(){
@@ -15,10 +16,24 @@ int main(){
     int byte;
     FILE *fpIn, *fpOut;
     int i;
-    char distribution[MAX_KEY_LENGTH][255];//array of key lengths & distributions for each key length
+    int distribution[MAX_KEY_LENGTH][255];//array of key lengths & distributions for each key length
     float probability[MAX_KEY_LENGTH];
     int max[MAX_KEY_LENGTH], min[MAX_KEY_LENGTH]; //max and min of ASCII as integers
-    int files_char_count;
+    float files_char_count[MAX_KEY_LENGTH];
+    
+    //unclear why the fuck this is necessary - distribution array not be initialized to 0
+    memset(distribution, 0, sizeof(distribution[0][0]) * MAX_KEY_LENGTH * 255);
+    memset(max, 0, sizeof(max[0]) * MAX_KEY_LENGTH);
+    memset(min, 0, sizeof(max[0]) * MAX_KEY_LENGTH);
+    memset(probability, 0, sizeof(probability[0]) * MAX_KEY_LENGTH);
+    
+    for (int o = 0; o < MAX_KEY_LENGTH; o++) {
+    for (int j = 0; j < 255; j++) {
+        if (distribution[o][j] != 0) {
+            fprintf(stdout,"[%d][%d] = %d\n", o,j, distribution[o][j]);
+        }
+    }
+    }
     
 //    unsigned char key[KEY_LENGTH] = {0x00, 0x00};
     
@@ -32,7 +47,7 @@ int main(){
         
         fprintf(stdout, "\nn = %d\n", n);
         i=1;
-        files_char_count = 0;
+        files_char_count[n] = 0;
 
         while (fscanf(fpIn, "%02X", &byte) != EOF) {
             
@@ -50,8 +65,8 @@ int main(){
                 distribution[n][byte] ++;
                 if (min[n] == 0) {min[n] = byte;}
                 if (max[n] < byte) {max[n] = byte;}
+                files_char_count[n]++;
             }
-            files_char_count++;
             i++;
 
         }
@@ -64,7 +79,7 @@ int main(){
 //                
                 for (int j = 0; j < 255; j++) {
                     if (distribution[n][j] != 0) {
-                        fprintf(stdout,"[%d][%d] = %d\n", n,j, distribution[n][j]);
+                        fprintf(stdout,"[%d][%c] = %d\n", n,j, distribution[n][j]);
                     }
                 }
 //            }
@@ -81,12 +96,22 @@ int main(){
         for (int l = 0; l < 255; l++) {
             
             //((number of times shown) / (files_char_count))^2
-            a = powf((((float) distribution[k][l]) / ((float) files_char_count) ),2);
+            a = powf((((float) distribution[k][l]) / (files_char_count[k]) ),2);
+//            fprintf(stdout,"a=%f",a);
+            
+//            if (a > 1) {
+//                fprintf(stdout, "error on %02F for [%d[%d]", a, k,l);
+//            }
             
             //add probability squared to that key length's sum
-            probability[k] = probability[k] + a;
+            probability[k] = (float)probability[k] + (float)a;
+//            fprintf(stdout,"probability[%d] = %f + %f\n", k, probability[k], a);
+            
+//            if (probability[k] > 1) {
+//                fprintf(stdout, "error at [%d][%d] = %d => %f\n", k,l, distribution[k][l], probability[k]);
+//            }
         }
-        fprintf(stdout, "length %d gives %f probability with %d chars\n", k, probability[k], files_char_count);
+        fprintf(stdout, "length %d gives %f probability with %02f chars\n", k, probability[k], files_char_count[k]);
     }
     
     
