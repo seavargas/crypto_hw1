@@ -20,6 +20,7 @@ int main(){
     float probability[MAX_KEY_LENGTH];
     int max[MAX_KEY_LENGTH], min[MAX_KEY_LENGTH]; //max and min of ASCII as integers
     float files_char_count[MAX_KEY_LENGTH];
+    int key_length;
     
     //unclear why the fuck this is necessary - distribution array not be initialized to 0
     memset(distribution, 0, sizeof(distribution[0][0]) * MAX_KEY_LENGTH * 255);
@@ -35,89 +36,47 @@ int main(){
     }
     }
     
-//    unsigned char key[KEY_LENGTH] = {0x00, 0x00};
-    
-    /* of course, I did not use the all-0s key to encrypt */
-    
     fpIn = fopen("ctext.txt", "r");
     fpOut = fopen("ptext_decoded.txt", "w");
     
-    //Find the key length
+    //log the distribution of character occurence
     for (int n = 1; n < MAX_KEY_LENGTH; n++) {
         
-//        fprintf(stdout, "\nn = %d\n", n);
         i=1;
         files_char_count[n] = 0;
 
         while (fscanf(fpIn, "%02X", &byte) != EOF) {
-            
-//            if (LOGGING) {
-//                if (byte != 13) {
-//                    fprintf(stdout, "%02d = ", byte);
-//                    fprintf(stdout, "%c & i=%d\n", byte, i);
-//                }
-//            }
-            
             if (i % n == 0) {
-                //every nth character
-//                if(LOGGING){printf("logged\n");}
-                //log the frequency at N, digit
-                distribution[n][byte] ++;
+                distribution[n][byte] ++; //track occurence in corresponding int slot of array
                 if (min[n] == 0) {min[n] = byte;}
                 if (max[n] < byte) {max[n] = byte;}
-                files_char_count[n]++;
+                files_char_count[n]++; //total number of chars considered
             }
             i++;
 
         }
-        rewind(fpIn);
-        
-//        if (LOGGING) {
-//            
-//            if (n == 1) {
-//                fprintf(stdout, "95=%d 96=%d 97=%d 98=%d 99=%d 100=%d\n", distribution[n][95],distribution[n][96],distribution[n][97],distribution[n][98],distribution[n][99],distribution[n][100]);
-//                
-//                for (int j = 0; j < 255; j++) {
-//                    if (distribution[n][j] != 0) {
-//                        fprintf(stdout,"[%d][%c] = %d\n", n,j, distribution[n][j]);
-//                    }
-//                }
-//            }
-//            
-//        }
-        
-//        fprintf(stdout, "min=%d, max=%d\n", min[n], max[n]);
-        
+        rewind(fpIn); //be kind, rewind
     }
     
     //get the key length distributions
     for (int k = 1; k < MAX_KEY_LENGTH ; k++) {
         float a;
         for (int l = 0; l < 255; l++) {
-            
             //((number of times shown) / (files_char_count))^2
             a = powf((((float) distribution[k][l]) / (files_char_count[k]) ),2);
-//            fprintf(stdout,"a=%f",a);
-            
-//            if (a > 1) {
-//                fprintf(stdout, "error on %02F for [%d[%d]", a, k,l);
-//            }
-            
             //add probability squared to that key length's sum
             probability[k] = (float)probability[k] + (float)a;
-//            fprintf(stdout,"probability[%d] = %f + %f\n", k, probability[k], a);
-            
-//            if (probability[k] > 1) {
-//                fprintf(stdout, "error at [%d][%d] = %d => %f\n", k,l, distribution[k][l], probability[k]);
-//            }
         }
+        //log out the probabilities
         fprintf(stdout, "length %02d gives %1.3f probability with %02.0f chars\n", k, probability[k], files_char_count[k]);
     }
+    //record the most likely key length
+    key_length = 1;
     
-    
-    //Find the key
+    //now that we know the length, find the actual key
     
 
+    //now that we know the key, print the decrypted text out to a file
     
     
     fclose(fpIn);
