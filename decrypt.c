@@ -8,7 +8,7 @@
 #include <stdlib.h>     /* strtol */
 #include <math.h>
 #include <string.h>
-#define MAX_KEY_LENGTH 20
+#define MAX_KEY_LENGTH 25
 #define LOGGING 0
 
 int main(){
@@ -45,7 +45,7 @@ int main(){
     //Find the key length
     for (int n = 1; n < MAX_KEY_LENGTH; n++) {
         
-        fprintf(stdout, "\nn = %d\n", n);
+//        fprintf(stdout, "\nn = %d\n", n);
         i=1;
         files_char_count[n] = 0;
 
@@ -77,16 +77,16 @@ int main(){
 //            if (n == 1) {
 //                fprintf(stdout, "95=%d 96=%d 97=%d 98=%d 99=%d 100=%d\n", distribution[n][95],distribution[n][96],distribution[n][97],distribution[n][98],distribution[n][99],distribution[n][100]);
 //                
-                for (int j = 0; j < 255; j++) {
-                    if (distribution[n][j] != 0) {
-                        fprintf(stdout,"[%d][%c] = %d\n", n,j, distribution[n][j]);
-                    }
-                }
+//                for (int j = 0; j < 255; j++) {
+//                    if (distribution[n][j] != 0) {
+//                        fprintf(stdout,"[%d][%c] = %d\n", n,j, distribution[n][j]);
+//                    }
+//                }
 //            }
 //            
 //        }
         
-        fprintf(stdout, "min=%d, max=%d\n", min[n], max[n]);
+//        fprintf(stdout, "min=%d, max=%d\n", min[n], max[n]);
         
     }
     
@@ -111,7 +111,7 @@ int main(){
 //                fprintf(stdout, "error at [%d][%d] = %d => %f\n", k,l, distribution[k][l], probability[k]);
 //            }
         }
-        fprintf(stdout, "length %d gives %f probability with %02f chars\n", k, probability[k], files_char_count[k]);
+        fprintf(stdout, "length %02d gives %1.3f probability with %02.0f chars\n", k, probability[k], files_char_count[k]);
     }
     
     
