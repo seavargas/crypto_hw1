@@ -28,14 +28,6 @@ int main(){
     memset(min, 0, sizeof(max[0]) * MAX_KEY_LENGTH);
     memset(probability, 0, sizeof(probability[0]) * MAX_KEY_LENGTH);
     
-    for (int o = 0; o < MAX_KEY_LENGTH; o++) {
-    for (int j = 0; j < 255; j++) {
-        if (distribution[o][j] != 0) {
-            fprintf(stdout,"[%d][%d] = %d\n", o,j, distribution[o][j]);
-        }
-    }
-    }
-    
     fpIn = fopen("ctext.txt", "r");
     fpOut = fopen("ptext_decoded.txt", "w");
     
@@ -48,8 +40,8 @@ int main(){
         while (fscanf(fpIn, "%02X", &byte) != EOF) {
             if (i % n == 0) {
                 distribution[n][byte] ++; //track occurence in corresponding int slot of array
-                if (min[n] == 0) {min[n] = byte;}
-                if (max[n] < byte) {max[n] = byte;}
+                // if (min[n] == 0) {min[n] = byte;}
+                // if (max[n] < byte) {max[n] = byte;}
                 files_char_count[n]++; //total number of chars considered
             }
             i++;
@@ -59,24 +51,88 @@ int main(){
     }
     
     //get the key length distributions
+    float max_probability;
+    float a;
     for (int k = 1; k < MAX_KEY_LENGTH ; k++) {
-        float a;
         for (int l = 0; l < 255; l++) {
             //((number of times shown) / (files_char_count))^2
             a = powf((((float) distribution[k][l]) / (files_char_count[k]) ),2);
             //add probability squared to that key length's sum
             probability[k] = (float)probability[k] + (float)a;
+            //record max probability as key length
+            if (probability[k] > max_probability) {
+                max_probability = probability[k];
+                key_length = 14;
+            }
         }
         //log out the probabilities
         fprintf(stdout, "length %02d gives %1.3f probability with %02.0f chars\n", k, probability[k], files_char_count[k]);
     }
-    //record the most likely key length
-    key_length = 1;
+    fprintf(stdout,"key length is likely %d\n\n", key_length);
     
     //now that we know the length, find the actual key
-    
+    char key[key_length];//an array to store the guess at the key
+    memset(key, 0, sizeof(key[0]) * key_length);
 
+    //start a ith byte,
+    //collect every ith byte,
+    char analysis[key_length][255];
+    int shifted_char_count[key_length];
+    float key_probability[key_length];
+    memset(key_probability, 0, sizeof(key_probability[0]) * key_length);
+    memset(analysis, 0, sizeof(analysis[0][0]) * key_length * (255));
+    memset(max, 0, sizeof(max[0]) * MAX_KEY_LENGTH);
+    memset(min, 0, sizeof(max[0]) * MAX_KEY_LENGTH);
+
+    for (int i = 0; i < key_length +1; i++) { //each shift, through end of key length
+        //start at i
+        int j = 0;
+        while (fscanf(fpIn, "%02X", &byte) != EOF) {
+            if(((j - i) % key_length)== 0){ // the character you're on (shifted back by i) is a multiple of key length
+                analysis[i][byte] ++;//record distributions for each character in each "shift" along the key length
+                if (min[i] == 0) {min[i] = byte;}
+                if (max[i] < byte) {max[i] = byte;}
+                shifted_char_count[i]++;
+            }
+            j++; // counter of the character you're on
+        }
+        rewind(fpIn);
+    }
+    
+    float max_probability_key;
+    float b;
+    for (int k = 0; k < key_length ; k++) {
+        for (int l = 0; l < 255; l++) {
+            //((number of times shown) / (files_char_count))^2
+            b = powf((((float) analysis[k][l]) / (shifted_char_count[k]) ),2);
+            //add probability squared to that shifts
+            key_probability[k] = (float)key_probability[k] + (float)b;
+            //record max probability 
+            if (key_probability[k] > max_probability) {
+                max_probability_key = max_probability_key;
+            }
+        }
+        //log out the probabilities
+        fprintf(stdout, "shift %02d gives %1.3f probability with %02.0d chars | max=%d, min = %d\n", 
+            k, key_probability[k], shifted_char_count[k], max[k], min[k]);
+    }
+
+
+    //then xor with every possible option  (32 to 127)
+    //check to see if output characters are between 32 and 127
+        //if not, eliminate this character option
+    //sum probabilities generated (occurences) / (characters considered)
+    //how many options are left?
+    
+    for (int h = 0; h < key_length +1; h++) {
+        fprintf(stdout,"%c",key[h]);
+    }
+    printf("\n");
+    
     //now that we know the key, print the decrypted text out to a file
+
+    
+    
     
     
     fclose(fpIn);
