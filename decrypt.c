@@ -77,19 +77,41 @@ int main(){
     //start a ith byte,
     //collect every ith byte,
     char analysis[key_length][255];
-    int shifted_char_count[key_length];
+    float shifted_char_count[key_length];
     float key_probability[key_length];
+    int eligible_chars = 127-33;
+    float xored_permutations[key_length][128][255];
+    memset(xored_permutations, 0, sizeof(xored_permutations[0][0][0]) * key_length * 255 * 127); 
     memset(key_probability, 0, sizeof(key_probability[0]) * key_length);
     memset(analysis, 0, sizeof(analysis[0][0]) * key_length * (255));
     memset(max, 0, sizeof(max[0]) * MAX_KEY_LENGTH);
     memset(min, 0, sizeof(max[0]) * MAX_KEY_LENGTH);
 
+
+
     for (int i = 0; i < key_length +1; i++) { //each shift, through end of key length
         //start at i
         int j = 0;
+
         while (fscanf(fpIn, "%02X", &byte) != EOF) {
             if(((j - i) % key_length)== 0){ // the character you're on (shifted back by i) is a multiple of key length
                 analysis[i][byte] ++;//record distributions for each character in each "shift" along the key length
+
+
+                float f;
+                for (int c = 32; c < 127; c++)
+                {
+                    //xor the current character with every character from 32 to 127
+
+                    f = byte ^ c;
+                    if (f>250)
+                    {
+                        printf("%f\n", f);
+                    }
+                    //record that xor probability sum in the xored permutations array
+                    xored_permutations[i][c][(int)f] ++;
+                }
+                 printf("AHHHHH\n");
                 if (min[i] == 0) {min[i] = byte;}
                 if (max[i] < byte) {max[i] = byte;}
                 shifted_char_count[i]++;
@@ -99,21 +121,29 @@ int main(){
         rewind(fpIn);
     }
     
+
     float max_probability_key;
     float b;
     for (int k = 0; k < key_length ; k++) {
         for (int l = 0; l < 255; l++) {
+
+            /*
+            go through probablilities and see if any 
+
+
+            */
             //((number of times shown) / (files_char_count))^2
-            b = powf((((float) analysis[k][l]) / (shifted_char_count[k]) ),2);
+            b = powf((((float) analysis[k][l]) / (float)(shifted_char_count[k]) ),2);
             //add probability squared to that shifts
             key_probability[k] = (float)key_probability[k] + (float)b;
+
             //record max probability 
             if (key_probability[k] > max_probability) {
                 max_probability_key = max_probability_key;
             }
         }
         //log out the probabilities
-        fprintf(stdout, "shift %02d gives %1.3f probability with %02.0d chars | max=%d, min = %d\n", 
+        fprintf(stdout, "shift %02d gives %1.3f probability with %02.0f chars | max=%d, min = %d\n", 
             k, key_probability[k], shifted_char_count[k], max[k], min[k]);
     }
 
