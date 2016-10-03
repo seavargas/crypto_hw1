@@ -76,118 +76,87 @@ int main(){
 
     //start a ith byte,
     //collect every ith byte,
-    char analysis[key_length][255];
-    float shifted_char_count[key_length];
-    float key_probability[key_length];
+    // char analysis[key_length][255];
+    // float shifted_char_count[key_length];
+    // float key_probability[key_length];
     int eligible_chars = 127-32;
     float xored_permutations[key_length + 1][eligible_chars + 32][255][1];
-    float collapsed_probabilities[key_length + 1][eligible_chars + 32][1];
-    float number_of_chars[key_length];
+    // float collapsed_probabilities[key_length + 1][eligible_chars + 32][1];
+    // float number_of_chars[key_length];
 
-    memset(xored_permutations, 0, sizeof(xored_permutations[0][0][0][0]) * key_length * 255 * (eligible_chars + 32)); 
-    memset(key_probability, 0, sizeof(key_probability[0]) * key_length);
-    memset(analysis, 0, sizeof(analysis[0][0]) * key_length * (255));
-    memset(max, 0, sizeof(max[0]) * MAX_KEY_LENGTH);
-    memset(min, 0, sizeof(max[0]) * MAX_KEY_LENGTH);
+    // memset(xored_permutations, 0, sizeof(xored_permutations[0][0][0][0]) * key_length * 255 * (eligible_chars + 32)); 
+    // memset(key_probability, 0, sizeof(key_probability[0]) * key_length);
+    // memset(analysis, 0, sizeof(analysis[0][0]) * key_length * (255));
+    // memset(max, 0, sizeof(max[0]) * MAX_KEY_LENGTH);
+    // memset(min, 0, sizeof(max[0]) * MAX_KEY_LENGTH);
 
 
 
-    for (int key_shift = 0; key_shift < key_length +1; key_shift++) { //each shift, through end of key length
-        //start at i
-        int current_char = 0;
+    // for (int key_shift = 0; key_shift < key_length +1; key_shift++) { //each shift, through end of key length
+    //     //start at i    
+    int current_char_count = 0;
+    int minor_char_count = 0;
+    char xored_chars[ (int) files_char_count[key_length]][255];
+    memset(xored_chars, 0, sizeof(xored_chars[0][0]) * ((int) files_char_count[key_length]) * 255); // anything is POSSIBLEEEE
 
         while (fscanf(fpIn, "%02X", &byte) != EOF) {
-            if(((current_char - key_shift) % key_length)== 0){ // the character you're on (shifted back by i) is a multiple of key length
-                
-                int xored_char;
-                for (int xored_with = 32; xored_with < 127; xored_with++)
-                {   
-                    //shift that character by xoring it with every eligible character
-                    xored_char = byte ^ xored_with;
-                    // if (xored_char > 127 || xored_char < 32)
-                    // {
-                    //     // printf("for shift:%d char:%c is not a valid option (%c before)\n", key_shift, xored_char, byte);
-                    // }
-                    //record the frequency of xored characters for each i shift
-                    xored_permutations[key_shift][xored_with][xored_char][0] ++;
-                    // printf("%d, %c, %d, %d %0.0f\n",key_shift, byte, xored_with, xored_char, xored_permutations[key_shift][xored_with][xored_char][0]);
+            if (current_char_count % key_length == 0)
+            {
+                for (int xor = 0; xor < 255;  xor++)
+                {
+                    //try decrypting this character with every value, 0 to 255
+                    xored_chars[minor_char_count][xor] = byte ^ (xor);   
+                    printf("%d xored with %d = %c\n", byte, xor, xored_chars[minor_char_count][xor]);
                 }
-                number_of_chars[key_shift]++;
+                minor_char_count++;  
             }
-            current_char++; // counter of the character you're on
+            current_char_count++;
         }
-        rewind(fpIn);
-    }
-    
 
-    float max_probability_key;
-    int potential_key_char;
-    int decoded_char;
-    float b;
-    //check the xored chars to see if xored with resulted in potential actual keys
-    for (int outer = 0; outer < key_length ; outer++) {
-        printf("round %d with %1.0f chars\n", outer, number_of_chars[outer]);
-        max_probability_key = 0;
-        
-        for (potential_key_char = 32; potential_key_char < (eligible_chars + 32); potential_key_char++)
+char possible_keys[key_length][255];
+memset(possible_keys, 1, sizeof(possible_keys[0]) * key_length * 255); // anything is POSSIBLEEEE
+
+for (int xoredwith = 0; xoredwith < 255; xoredwith++)
+{
+        //validate the xors that are valid
+        for (int occurence = 0; occurence < minor_char_count; occurence++)
         {
-            for (decoded_char = 0; decoded_char < 127; decoded_char++)
+            //does that xor value result in 32 < all values < 127
+            if ((xored_chars[occurence][xoredwith] < 32) || (xored_chars[occurence][xoredwith] > 127))
             {
-                //sum xored permutations for each outer and potential key
-
-                collapsed_probabilities[outer][potential_key_char][0] = collapsed_probabilities[outer][potential_key_char][0] + 
-                powf((xored_permutations[outer][potential_key_char][decoded_char][0] / number_of_chars[outer]),2);
-               if (xored_permutations[outer][potential_key_char][decoded_char][0] != 0)
-               {
-//printf("\t\txored_permutations[%d][%c][%c]:%1.0f\n", outer, potential_key_char, decoded_char, xored_permutations[outer][potential_key_char][decoded_char][0]);
-               }
-
-                if ((collapsed_probabilities[outer][potential_key_char][0] > max_probability_key)) 
-                {   
-                    key[outer] = potential_key_char;
-//                    printf("%d with prob %0.4f\n", potential_key_char, collapsed_probabilities[outer][potential_key_char][0]);
-                    max_probability_key = collapsed_probabilities[outer][potential_key_char][0];
-                }
-                // if (xored_permutations[outer][potential_key_char][decoded_char])
-                // {
-                //     /* code */
-                // }
-
+                possible_keys[1][xoredwith] = 0; //TODO: hardcoded
+                // printf("%d %d = %d\n", occurence, xoredwith, xored_chars[occurence][xoredwith]);
             }
-            if ((collapsed_probabilities[outer][potential_key_char][0] > 0.055) && (collapsed_probabilities[outer][potential_key_char][0] < 0.075))
-            {
-              printf("\tcollapsed_prob[%d][%c]:%0.6f\n", outer, potential_key_char, collapsed_probabilities[outer][potential_key_char][0]);
-            }
-
         }
-        
-
-     // key[outer] = 'a'; //most likely key
-    }
+}
 
 
+    // float max_probability_key;
+    // int potential_key_char;
+    // int decoded_char;
+    // float b;
 
-    //then xor with every possible option  (32 to 127)
-    //check to see if output characters are between 32 and 127
-        //if not, eliminate this character option
-    //sum probabilities generated (occurences) / (characters considered)
-    //how many options are left?
-    
+    printf("the key is:");
     for (int h = 0; h < key_length +1; h++) {
         fprintf(stdout,"%c",key[h]);
     }
     printf("\n");
 
 
-    for (int q = 0; q < key_length; q++)
-    {
-        // printf("-----ROUND %d-----\n\n", q);
-        for (int r = 0; r < 127; ++r)
+    // for (int q = 0; q < key_length; q++)
+    // {
+        // printf("key[%d]\n", q);
+        printf("key possibles: ");
+        for (int r = 0; r < 255; ++r)
         {
-            // printf("collapsed_prob[%d][%c]:%0.4f\n", q, r, collapsed_probabilities[q][r][0]);
+            if(possible_keys[1][r] == 1){ //TODO: hardcoded
+                //if the array of possible key values is 1, print that array index as a char with ,
+                printf("%c,", r);
+                printf("foundone");
+            }
         }
         printf("\n");
-    }
+    // }
 
     
     //now that we know the key, print the decrypted text out to a file
