@@ -5,12 +5,12 @@
  ************************************/
 
 #include <stdio.h>
-#define KEY_LENGTH 2 // Can be anything from 1 to 13
+#define KEY_LENGTH 4 // Can be anything from 1 to 13
 
 int main(){  
   unsigned char ch;  
   FILE *fpIn, *fpOut;  
-  int i;  unsigned char key[KEY_LENGTH] = {0x00, 0x00};
+  int i;  unsigned char key[KEY_LENGTH] = {0x77, 0x6f, 0x72, 0x64};
   /* of course, I did not use the all-0s key to encrypt */
 
   fpIn = fopen("ptext.txt", "r");  
