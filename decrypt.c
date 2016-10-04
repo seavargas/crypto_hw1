@@ -96,16 +96,17 @@ int main(){
     //     //start at i    
     int current_char_count = 0;
     int minor_char_count = 0;
-    int xored_chars[ (int) files_char_count[key_length]][255]; //need int because rollover if not?
-    memset(xored_chars, 0, sizeof(xored_chars[0][0]) * ((int) files_char_count[key_length]) * 255); // anything is POSSIBLEEEE
+    int xored_chars[key_length][ (int) files_char_count[key_length]][255]; //need int because rollover if not?
+    memset(xored_chars, 0, sizeof(xored_chars[0][0][0]) * key_length * ((int) files_char_count[key_length]) * 255); // anything is POSSIBLEEEE
+    int iteration = 0;
 
         while (fscanf(fpIn, "%02X", &byte) != EOF) {
-            if (current_char_count % key_length == 0)
-            {
+            // if (current_char_count % key_length == 0){ minor_char_count = 0; }//make this a dimension, where ccc%kl is a dimension of the xored chars
+            minor_char_count = current_char_count % key_length;
                 for (int xor = 0; xor < 255;  xor++)
                 {
                     //try decrypting this character with every value, 0 to 255
-                    xored_chars[minor_char_count][xor] = byte ^ (xor);
+                    xored_chars[minor_char_count][iteration][xor] = byte ^ (xor);
 
                     // if (xored_chars[minor_char_count][xor] > 32 && xored_chars[minor_char_count][xor] < 172)
                     //    {
@@ -114,45 +115,59 @@ int main(){
                     // }   
 
                 }
-                minor_char_count++;  
-            }
+            if (minor_char_count == 13){iteration++;}
+
+                // minor_char_count++;  
+            // }
             current_char_count++;
         }
 
-for (int i = 0; i < 255; ++i)
+//// testing print ////
+for (int keyspot = 0; keyspot < key_length; keyspot++)
 {
-printf("%d:", i);
-for (int testingxors = 0; testingxors < minor_char_count; ++testingxors)
+for (int xoredwithchar = 0; xoredwithchar < 255; ++xoredwithchar)
 {
-    printf("%d=%c ", xored_chars[testingxors][i], xored_chars[testingxors][i]);
+printf("spot %d xwith %d:", keyspot, xoredwithchar);
+for (int filechunk = 0; filechunk < ((int) files_char_count[key_length]); filechunk++)
+{
+    printf("%x=%c ", xored_chars[keyspot][filechunk][xoredwithchar], xored_chars[keyspot][filechunk][xoredwithchar]);
 }
 printf("\n");
+}
 }
 
 
 char possible_keys[key_length][255];
 memset(possible_keys, 1, sizeof(possible_keys[0][0]) * key_length * 255); // anything is POSSIBLEEEE
-int numberoffailures[255];
+int numberoffailures[key_length][255];
+
+for (int i = 0; i < key_length; i++)
+{
 
 for (int xoredwith = 0; xoredwith < 255; xoredwith++)
 {
         //validate the xors that are valid
-        for (int occurence = 0; occurence < minor_char_count; occurence++)
+        for (int occurence = 0; occurence < ((int) files_char_count[key_length]); occurence++)
         {
             //does that xor value result in 32 < all values < 127
-            if ((xored_chars[occurence][xoredwith] < 32) || (xored_chars[occurence][xoredwith] > 127))
+            if ((xored_chars[i][occurence][xoredwith] < 32) || (xored_chars[i][occurence][xoredwith] > 127) || 
+               ((xored_chars[i][occurence][xoredwith] > 47) && (xored_chars[i][occurence][xoredwith] < 58)) ) 
             {
-                possible_keys[1][xoredwith] = 0; //TODO: hardcoded
-                numberoffailures[xoredwith]++;
-                // printf("xored_chars[%d][%d] = %d\n", occurence, xoredwith, xored_chars[occurence][xoredwith]);
+                possible_keys[i][xoredwith] = 0; //TODO: hardcoded
+                numberoffailures[i][xoredwith]++;
+                // printf("xored_chars[%d][%d][%d] = %d\n", i, occurence, xoredwith, xored_chars[i][occurence][xoredwith]);
             }
         }
 }
 
+}
 
+for (int j = 0; j < key_length; ++j)
+{
 for (int i = 0; i < 255 ; ++i)
 {
-    printf("%c/%d failed %d times\n", i, i, numberoffailures[i]);
+    printf("%c/%d failed %d times for entry %d\n", i, i, numberoffailures[j][i], j);
+}
 }
 
     // float max_probability_key;
@@ -167,20 +182,20 @@ for (int i = 0; i < 255 ; ++i)
     printf("\n");
 
 
-    // for (int q = 0; q < key_length; q++)
-    // {
-        // printf("key[%d]\n", q);
+    for (int q = 0; q < key_length; q++)
+    {
+        printf("key[%d]:", q);
         printf("key possibles: ");
-        for (int r = 32; r < 127; ++r)
+        for (int r = 0; r < 255; ++r)
         {
-            if(possible_keys[1][r] == 1){ //TODO: hardcoded
+            if(possible_keys[q][r] == 1){ //TODO: hardcoded
                 //if the array of possible key values is 1, print that array index as a char with ,
                 printf("%d,", r);
-                printf("found one");
+                // printf("found one");
             }
         }
         printf("\n");
-    // }
+    }
 
     
     //now that we know the key, print the decrypted text out to a file
